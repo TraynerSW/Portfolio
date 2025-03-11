@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Explorer</title>
+	<title>Trayner's Explorer</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<style>
 		* {
@@ -69,14 +69,20 @@
 			transition: opacity 0.8s ease-out;
 		}
 		.intro-text {
-			font-family: 'Zain', sans-serif;
-    		font-weight: bold;
+			font-family: 'Zain', sans-serif !important;
+			font-weight: bold;
 			font-size: 9rem;
 			color: white;
 			text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
 			opacity: 0;
 			transform: scale(0.5);
 			animation: textAppear 1s forwards, textDisappear 1s forwards 2s;
+		}
+
+		@media only screen and (max-width: 768px) {
+			.intro-text {
+				font-size: 4rem;
+			}
 		}
 		@keyframes textAppear {
 			0% {
@@ -201,10 +207,15 @@
 			overflow: hidden;
 		}
 		.sidebar {
-			width: 230px;
+			width: 180px; /* Reduced default width */
 			background-color: rgb(23, 23, 23);
 			border-right: 1px solid #3a3a3a;
 			overflow-y: auto;
+		}
+		@media (max-width: 600px) {
+			.sidebar {
+				width: 120px; /* Further reduced width for mobile devices */
+			}
 		}
 		.sidebar-section {
 			margin-bottom: 15px;
@@ -375,11 +386,218 @@
 
 	<div class="explorer" id="explorer">
 		<div class="window-controls">
-			<div class="window-button maximize"></div>
-			<div class="window-button minimize"></div>
-			<div class="window-button close"></div>
+			<div class="window-button maximize" onclick="toggleMaximize()"></div>
+			<div class="window-button minimize" onclick="toggleMinimize()"></div>
+			<div class="window-button close" onclick="closeExplorer()"></div>
 		</div>
-		
+		<script>
+			function toggleMaximize() {
+				const explorer = document.getElementById('explorer');
+				// Smooth transition for size and position changes
+				explorer.style.transition = 'width 0.3s ease, height 0.3s ease, top 0.3s ease, left 0.3s ease';
+				if (explorer.classList.contains('maximized')) {
+					explorer.classList.remove('maximized');
+					explorer.style.width = '90vw';
+					explorer.style.height = '90vh';
+					explorer.style.top = '';
+					explorer.style.left = '';
+				} else {
+					explorer.classList.add('maximized');
+					explorer.style.width = '100vw';
+					explorer.style.height = '100vh';
+					explorer.style.top = '0';
+					explorer.style.left = '0';
+				}
+			}
+
+			function toggleMinimize() {
+				const explorer = document.getElementById('explorer');
+				// Smooth transition for size, position and opacity when hiding or showing sections
+				explorer.style.transition = 'width 0.3s ease, height 0.3s ease, bottom 0.3s ease, right 0.3s ease';
+				if (explorer.classList.contains('minimized')) {
+					// Restore to full explorer mode
+					explorer.classList.remove('minimized');
+					explorer.style.width = '90vw';
+					explorer.style.height = '90vh';
+					explorer.style.position = 'relative';
+					explorer.style.bottom = '';
+					explorer.style.right = '';
+					
+					const header = explorer.querySelector('.header');
+					const contentContainer = explorer.querySelector('.content-container');
+					const statusBar = explorer.querySelector('.status-bar');
+					if (header) {
+						header.style.display = 'flex';
+						header.style.transition = 'opacity 0.3s ease';
+						header.style.opacity = '1';
+					}
+					if (contentContainer) {
+						contentContainer.style.display = 'flex';
+						contentContainer.style.transition = 'opacity 0.3s ease';
+						contentContainer.style.opacity = '1';
+					}
+					if (statusBar) {
+						statusBar.style.display = 'flex';
+						statusBar.style.transition = 'opacity 0.3s ease';
+						statusBar.style.opacity = '1';
+					}
+				} else {
+					// Minimize explorer to only show the title bar
+					explorer.classList.add('minimized');
+					explorer.style.width = '300px';
+					explorer.style.height = '40px';
+					explorer.style.position = 'fixed';
+					explorer.style.top = '';
+					explorer.style.left = '';
+					explorer.style.bottom = '10px';
+					explorer.style.right = '10px';
+					
+					// Hide other sections with a smooth fade-out
+					const header = explorer.querySelector('.header');
+					const contentContainer = explorer.querySelector('.content-container');
+					const statusBar = explorer.querySelector('.status-bar');
+					if (header) {
+						header.style.transition = 'opacity 0.3s ease';
+						header.style.opacity = '0';
+						setTimeout(() => header.style.display = 'none', 300);
+					}
+					if (contentContainer) {
+						contentContainer.style.transition = 'opacity 0.3s ease';
+						contentContainer.style.opacity = '0';
+						setTimeout(() => contentContainer.style.display = 'none', 300);
+					}
+					if (statusBar) {
+						statusBar.style.transition = 'opacity 0.3s ease';
+						statusBar.style.opacity = '0';
+						setTimeout(() => statusBar.style.display = 'none', 300);
+					}
+				}
+			}
+
+			function closeExplorer() {
+				const explorer = document.getElementById('explorer');
+				// Fade out explorer smoothly before hiding it
+				explorer.style.transition = 'opacity 0.3s ease';
+				explorer.style.opacity = '0';
+				setTimeout(() => {
+					explorer.style.display = 'none';
+					// Show the description overlay with reopen button
+					showExplorerDescription();
+				}, 500);
+			}
+
+			function showExplorerDescription() {
+				let desc = document.getElementById('explorer-description');
+				if (!desc) {
+					desc = document.createElement('div');
+					desc.id = 'explorer-description';
+					desc.style.position = 'fixed';
+					desc.style.top = '50%';
+					desc.style.left = '50%';
+					desc.style.transform = 'translate(-50%, -50%)';
+					desc.style.background = 'transparent';
+					desc.style.color = '#ffffff';
+					desc.style.fontFamily = 'Segoe, sans-serif';
+					desc.style.textAlign = 'center';
+					desc.style.zIndex = '10000';
+					
+					// Create description message as an h1 element with heavy font weight and transition effect
+					const transitionSpeed = 900; // in milliseconds 
+					const message = document.createElement('h1');
+					message.textContent = "Présentation de l'explorer";
+					message.style.fontWeight = '900';
+					message.style.fontSize = '48px';
+					message.style.marginBottom = '40px';
+					message.style.opacity = '0';
+					message.style.transition = `opacity ${transitionSpeed}ms ease`;
+					desc.appendChild(message);
+					setTimeout(() => {
+						message.style.opacity = '1';
+					}, 100);
+					
+					// Add additional phrases as h2 elements with fade-in transition
+					const subtitle1 = document.createElement('h2');
+					subtitle1.textContent = " ";
+					subtitle1.style.marginBottom = '10px';
+					subtitle1.style.opacity = '0';
+					subtitle1.style.transition = 'opacity 1s ease';
+					desc.appendChild(subtitle1);
+					
+					const subtitle2 = document.createElement('h2');
+					subtitle2.textContent = " ";
+					subtitle2.style.opacity = '0';
+					subtitle2.style.transition = 'opacity 1s ease';
+					desc.appendChild(subtitle2);
+					
+					// Trigger fade-in for h2 elements
+					setTimeout(() => {
+						subtitle1.style.opacity = '1';
+						subtitle2.style.opacity = '1';
+					}, 500);
+					
+					// Create reopen button (icon only, styled like Windows 11)
+					const openButton = document.createElement('button');
+					openButton.id = 'open-explorer-btn';
+					openButton.style.background = 'transparent';
+					openButton.style.border = 'none';
+					openButton.style.cursor = 'pointer';
+					openButton.style.width = '40px';
+					openButton.style.height = '40px';
+					openButton.style.borderRadius = '50%';
+					// Added opacity transition (same as h1) and initial opacity set to 0
+					openButton.style.transition = `opacity 500ms ease, background 0.2s ease`;
+					openButton.style.opacity = '0';
+					openButton.innerHTML = '<i class="fas fa-folder-open" style="font-size: 24px; color: #ffffff;"></i>';
+					openButton.style.position = 'fixed';
+					openButton.style.bottom = '10px';
+					openButton.style.right = '10px';
+					openButton.onclick = function() {
+						closeExplorerDescription();
+						openExplorer();
+					};
+					// Fade-in the button after 500 milliseconds
+					setTimeout(() => {
+						openButton.style.opacity = '1';
+					}, 500);
+					
+					document.body.appendChild(openButton);
+					document.body.appendChild(desc);
+				} else {
+					const btn = document.getElementById('open-explorer-btn');
+					if (btn) {
+						btn.style.display = 'block';
+					}
+					desc.style.display = 'block';
+					desc.style.opacity = '0';
+					desc.style.transition = 'opacity 0.3s ease';
+					setTimeout(() => {
+						desc.style.opacity = '1';
+					}, 10);
+				}
+			}
+			
+			function closeExplorerDescription() {
+				const desc = document.getElementById('explorer-description');
+				if (desc) {
+					desc.style.transition = 'opacity 0.3s ease';
+					desc.style.opacity = '0';
+					setTimeout(() => {
+						desc.style.display = 'none';
+					}, 300);
+				}
+			}
+
+			function openExplorer() {
+				const explorer = document.getElementById('explorer');
+				const openButton = document.getElementById('open-explorer-btn');
+				if (openButton) { openButton.style.display = 'none'; }
+				explorer.style.display = 'flex';
+				setTimeout(() => {
+					explorer.style.transition = 'opacity 0.3s ease';
+					explorer.style.opacity = '1';
+				}, 10);
+			}
+		</script>
 		<div class="title-bar">
 			Explorateur de fichiers
 		</div>
